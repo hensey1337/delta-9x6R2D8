@@ -27,7 +27,7 @@
         header h1 { font-size: 2rem; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
         header p { color: var(--text-muted); font-size: 1rem; }
         
-        .nav-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 25px; }
+        .nav-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 25px; }
         .nav-btn { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); padding: 12px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.85rem; transition: all 0.2s ease; text-align: center; }
         .nav-btn:hover { background: var(--bg-accent); border-color: var(--accent); }
         .nav-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
@@ -104,7 +104,6 @@
         <button class="nav-btn" onclick="switchTab('strategy', this)">Стратегия / Пояснение</button>
     </div>
 
-    <!-- Контейнеры подгружаются динамически -->
     <div id="tab-qwe" class="tab-content active"><div class="section"><div class="section-title blue">🛡️ Состав QWE</div><div id="container-qwe" class="squad-grid"><div class="loading-msg">Загрузка...</div></div></div></div>
     <div id="tab-dd" class="tab-content"><div class="section"><div class="section-title blue">⚔️ Состав DD</div><div id="container-dd" class="squad-grid"><div class="loading-msg">Загрузка...</div></div></div></div>
     <div id="tab-dark1" class="tab-content"><div class="section"><div class="section-title red">💀 Вражеский состав: lDarkness</div><div id="container-dark1" class="squad-grid"><div class="loading-msg">Загрузка...</div></div></div></div>
@@ -136,7 +135,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 <script>
-    // --- КОНФИГУРАЦИЯ ---
     const PUB_KEY = '2PACX-1vSAdKvnDfusW0YrdnJgV3Wd3swPgFvKJRmSSQ1zc0aN2mxuBPpu2DvqzSwDnJqPeBHvFFV57e_ZJnR8';
     const URLS = {
         qwe: `https://docs.google.com/spreadsheets/d/e/${PUB_KEY}/pub?output=csv&gid=1505585512`,
@@ -148,7 +146,6 @@
         strategy: `https://docs.google.com/spreadsheets/d/e/${PUB_KEY}/pub?output=csv&gid=2058197677`
     };
 
-    // --- УТИЛИТЫ ---
     const switchTab = (id, btn) => {
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -167,19 +164,66 @@
         return `<span class="${c}">${name}</span>`;
     };
 
-    // Хелпер для нормализации плоских таблиц
     const normalizeFlatData = (data) => data.map(row => {
         const n = {};
         for (let k in row) n[k.trim().toLowerCase()] = (row[k] || '').trim();
         return n;
     });
 
-    // --- ЛОГИКА РЕНДЕРА ---
+    // УМНЫЙ ПАРСЕР СЕТКИ (собирает всех подряд)
+    function parseGridData(rows) {
+        const squads = [];
+        let currentSquad = null;
 
-    // 1. Универсальный рендер для составов (QWE, DD, Враги)
+        rows.forEach(row => {
+            if (!row || !row.length) return;
+
+            row.forEach(cell => {
+                const val = (cell || '').trim();
+                if (!val) return;
+
+                const low = val.toLowerCase();
+
+                // Если нашли заголовок группы — создаем новую пачку
+                if (low.includes('group') || low.includes('группа')) {
+                    currentSquad = { title: val, members: [] };
+                    squads.push(currentSquad);
+                } 
+                // Пропускаем заголовки колонок
+                else if (low === 'nickname' || low === 'никнейм' || low === 'class' || low === 'класс' || low === 'gs' || low === 'гир скор') {
+                    return; 
+                } 
+                // Если есть текст и это не цифры (гирскор), добавляем игрока
+                else if (currentSquad && isNaN(val) && val !== '—' && val !== '-') {
+                    // Игнорируем классы, чтобы они не попали в ники
+                    if (!low.includes('sns') && !low.includes('spear') && !low.includes('bow') && !low.includes('dagger')) {
+                        currentSquad.members.push({ nickname: val, class: '', gs: '' });
+                    } else {
+                        // Если это класс — вешаем его на последнего добавленного игрока
+                        if (currentSquad.members.length > 0) {
+                            currentSquad.members[currentSquad.members.length - 1].class = val;
+                        }
+                    }
+                } 
+                // Если это число (GS) — вешаем на последнего игрока
+                else if (currentSquad && !isNaN(val) && val.length >= 3) {
+                    if (currentSquad.members.length > 0) {
+                        currentSquad.members[currentSquad.members.length - 1].gs = val;
+                    }
+                }
+            });
+        });
+
+        return squads.filter(s => s.members.length > 0);
+    }
+
     function renderSquadList(containerId, squads) {
         const container = document.getElementById(containerId);
         container.innerHTML = '';
+        if (!squads || squads.length === 0) {
+            container.innerHTML = '<div class="loading-msg">Данные не найдены (проверьте структуру)</div>';
+            return;
+        }
         squads.forEach(sq => {
             const card = document.createElement('div');
             card.className = 'squad-card';
@@ -198,41 +242,6 @@
         });
     }
 
-    // 2. Парсер для "сетки в 2 колонки" (для составов)
-    function parseGridData(rows) {
-        const squads = []; let left = null, right = null;
-        rows.forEach(row => {
-            if (!row || !row.length) return;
-            // Левая часть
-            const lc = (row[0] || '').trim();
-            if (lc.toLowerCase().includes('group')) {
-                left = { title: lc, members: [] }; squads.push(left);
-            } else if (lc && left && !lc.toLowerCase().includes('nickname') && !lc.toLowerCase().includes('никнейм')) {
-                left.members.push({ nickname: lc, class: (row[1] || '').trim(), gs: (row[3] || '').trim() });
-            }
-            // Правая часть
-            let rgIdx = -1;
-            for (let i = 4; i < Math.min(row.length, 8); i++) {
-                if ((row[i] || '').trim().toLowerCase().includes('group')) { rgIdx = i; break; }
-            }
-            if (rgIdx !== -1) {
-                right = { title: row[rgIdx].trim(), members: [] }; squads.push(right);
-            } else {
-                let rNick = '', rClass = '', rGs = '';
-                for (let i = 4; i < row.length; i++) {
-                    const cell = (row[i] || '').trim(); if (!cell) continue;
-                    const cl = cell.toLowerCase();
-                    if (!rNick && !cl.includes('nickname') && !cl.includes('никнейм')) rNick = cell;
-                    else if (rNick && !rClass && !cl.includes('class') && !cl.includes('класс')) rClass = cell;
-                    else if (rNick && rClass && !rGs && !cl.includes('gs') && !cl.includes('гир')) rGs = cell;
-                }
-                if (rNick && right) right.members.push({ nickname: rNick, class: rClass, gs: rGs });
-            }
-        });
-        return squads.filter(s => s.members.length > 0);
-    }
-
-    // 3. Рендер для таблиц (Блеклист, Таргеты)
     function renderTable(tbodyId, rows, isTarget = false) {
         const tbody = document.getElementById(tbodyId);
         tbody.innerHTML = '';
@@ -249,7 +258,6 @@
         });
     }
 
-    // 4. Рендер для стратегии
     function renderStrategy(rows) {
         const container = document.getElementById('container-strategy');
         container.innerHTML = '';
@@ -277,7 +285,6 @@
         });
     }
 
-    // 5. Рендер статистики врагов
     function renderStats(enemies) {
         const counts = {};
         enemies.forEach(m => {
@@ -290,9 +297,6 @@
             : '<div style="color:var(--text-muted)">Нет данных</div>';
     }
 
-    // --- ЗАГРУЗКА ДАННЫХ ---
-    
-    // Составы (сетка)
     const loadSquad = (url, containerId, isEnemy = false) => {
         Papa.parse(url, {
             download: true, header: false, skipEmptyLines: true,
@@ -313,7 +317,6 @@
     loadSquad(URLS.dark1, 'container-dark1', true);
     loadSquad(URLS.dark11, 'container-dark11', true);
 
-    // Остальные (плоские)
     Papa.parse(URLS.blacklist, { download: true, header: true, skipEmptyLines: true, complete: res => renderTable('tbody-blacklist', normalizeFlatData(res.data)) });
     Papa.parse(URLS.targets, { download: true, header: true, skipEmptyLines: true, complete: res => renderTable('tbody-targets', normalizeFlatData(res.data), true) });
     Papa.parse(URLS.strategy, { download: true, header: true, skipEmptyLines: true, complete: res => renderStrategy(normalizeFlatData(res.data)) });
