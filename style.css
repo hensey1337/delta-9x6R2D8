@@ -7,12 +7,13 @@
 
 body {
     background-color: var(--bg-main); 
-    /* Поддержка разных названий файла */
-    background-image: url('cat.png'), url('cat.PNG'), url('cat.jpg'); 
-    background-size: cover; /* Растягивает на весь экран */
-    background-position: center center; /* Центрирует */
-    background-attachment: fixed; /* Кот не двигается при скролле */
+    background-image: url('cat.png'); 
+    
+    /* Центрируем и масштабируем без искажений */
+    background-size: cover;
+    background-position: center center;
     background-repeat: no-repeat;
+    background-attachment: scroll; /* Убрали fixed, теперь фон скроллится с сайтом */
     
     color: var(--text-main); 
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -21,10 +22,10 @@ body {
     min-height: 100vh;
 }
 
-/* Затемнение фона. Снизил до 0.5, чтобы кота было лучше видно */
+/* Затемнение фона. Сделал 0.4, чтобы кота было видно, но текст читался */
 body::before {
     content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(11, 14, 20, 0.5); z-index: -1;
+    background: rgba(11, 14, 20, 0.4); z-index: -1;
 }
 
 .container { max-width: 1000px; margin: 0 auto; position: relative; z-index: 1; }
@@ -47,7 +48,7 @@ header p { color: var(--text-muted); font-size: 1rem; }
 .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-.section { background: rgba(19, 24, 34, 0.85); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 25px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.section { background: rgba(19, 24, 34, 0.9); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 25px; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
 .section-title { font-size: 1.3rem; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; font-weight: bold; text-transform: uppercase; }
 .section-title.red { color: var(--primary); }
 .section-title.blue { color: var(--accent); }
