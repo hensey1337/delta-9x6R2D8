@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex, nofollow">
+<title>1DARKNES — АНТИ-ЗЕРГ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="wrap">
+  <header class="topbar">
+    <a class="back" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg><span>Назад</span></a>
+    <span class="topbar__title">состав</span>
+  </header>
+
+  <div class="section-head">
+    <h1>1DARKNES</h1>
+    <span class="count" id="count">загрузка…</span>
+  </div>
+
+  <div class="legend">
+    <span class="l-dd"><i></i>урон</span>
+    <span class="l-tank"><i></i>танк</span>
+    <span class="l-heal"><i></i>хил</span>
+  </div>
+
+  <main id="content">
+    <div class="state"><span class="spinner"></span>Синхронизация с таблицей…</div>
+  </main>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/render.js"></script>
+<script>initPage('dark1');</script>
+</body>
+</html>
