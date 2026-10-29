@@ -165,7 +165,7 @@
         return n;
     });
 
-    // УМНЫЙ ПАРСЕР ДЛЯ КОЛОНОК (Сканирует строку и раскладывает по типам)
+    // ПАРСЕР ДЛЯ КОЛОНОК (Читает точные индексы)
     function parseGridData(rows) {
         const squads = [];
         let currentSquadLeft = null;
@@ -176,51 +176,34 @@
 
             // --- ЛЕВАЯ ЧАСТЬ (Индексы 0, 1, 2) ---
             const leftCell = (row[0] || '').trim();
-            if (leftCell.toLowerCase().includes('group')) {
+            // Ищем слово "КП" или "Group" в первой колонке
+            if (leftCell.includes('КП') || leftCell.toLowerCase().includes('group')) {
                 currentSquadLeft = { title: leftCell, members: [] };
                 squads.push(currentSquadLeft);
             } 
-            else if (leftCell && currentSquadLeft && !leftCell.toLowerCase().includes('nickname') && !leftCell.toLowerCase().includes('никнейм')) {
-                // Собираем данные левого игрока
-                let nick = leftCell;
-                let cls = '';
-                let gs = '';
-                
-                // Проверяем оставшиеся ячейки строки (1, 2, 3)
-                for(let i = 1; i <= 3; i++) {
-                    const val = (row[i] || '').trim();
-                    if (!val || val.toLowerCase() === 'class' || val.toLowerCase() === 'gs') continue;
-                    
-                    if (isNaN(val) || val.length < 3) cls = val; // Если это не число (SNS/GS), то это класс
-                    else gs = val; // Если число (5400), то это GS
-                }
-                
-                currentSquadLeft.members.push({ nickname: nick, class: cls, gs: gs });
+            // Если есть ник (и это не заголовок "НИКНЕЙМ")
+            else if (leftCell && currentSquadLeft && !leftCell.toUpperCase().includes('НИКНЕЙМ')) {
+                currentSquadLeft.members.push({ 
+                    nickname: leftCell, 
+                    class: (row[1] || '').trim(), 
+                    gs: (row[2] || '').trim() // Берем 3-ю колонку (C) как GS
+                });
             }
 
-            // --- ПРАВАЯ ЧАСТЬ (Индексы 5, 6, 7) ---
-            const rightGroupCell = (row[5] || '').trim();
-            if (rightGroupCell.toLowerCase().includes('group')) {
+            // --- ПРАВАЯ ЧАСТЬ (Индексы 4, 5, 6) ---
+            const rightGroupCell = (row[4] || '').trim();
+            if (rightGroupCell.includes('КП') || rightGroupCell.toLowerCase().includes('group')) {
                 currentSquadRight = { title: rightGroupCell, members: [] };
                 squads.push(currentSquadRight);
             } 
             else {
-                const rightNickCell = (row[6] || '').trim();
-                if (rightNickCell && currentSquadRight && !rightNickCell.toLowerCase().includes('nickname') && !rightNickCell.toLowerCase().includes('никнейм')) {
-                    
-                    let nick = rightNickCell;
-                    let cls = '';
-                    let gs = '';
-                    
-                    for(let i = 7; i <= 9; i++) {
-                        const val = (row[i] || '').trim();
-                        if (!val || val.toLowerCase() === 'class' || val.toLowerCase() === 'gs') continue;
-                        
-                        if (isNaN(val) || val.length < 3) cls = val;
-                        else gs = val;
-                    }
-                    
-                    currentSquadRight.members.push({ nickname: nick, class: cls, gs: gs });
+                const rightNickCell = (row[4] || '').trim();
+                if (rightNickCell && currentSquadRight && !rightNickCell.toUpperCase().includes('НИКНЕЙМ')) {
+                    currentSquadRight.members.push({ 
+                        nickname: rightNickCell, 
+                        class: (row[5] || '').trim(), 
+                        gs: (row[6] || '').trim() // Берем 6-ю колонку (G) как GS
+                    });
                 }
             }
         });
@@ -310,7 +293,7 @@
 
     Papa.parse(URLS.blacklist, { download: true, header: true, skipEmptyLines: true, complete: res => renderTable('tbody-blacklist', normalizeFlatData(res.data)) });
     Papa.parse(URLS.targets, { download: true, header: true, skipEmptyLines: true, complete: res => renderTable('tbody-targets', normalizeFlatData(res.data), true) });
-    Papa.parse(URLS.strategy, { download: true, header: true, skipEmptyLines: true, complete: res => renderStats(normalizeFlatData(res.data)) }); // renderStats заменен на renderStrategy
+    Papa.parse(URLS.strategy, { download: true, header: true, skipEmptyLines: true, complete: res => renderStrategy(normalizeFlatData(res.data)) });
 </script>
 </body>
 </html>
