@@ -11,47 +11,72 @@
             --primary: #ef4444; --secondary: #f97316; --accent: #3b82f6;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body {
-            background-color: var(--bg-main); background-image: url('cat.png');
-            background-size: cover; background-position: center top;
-            background-attachment: fixed; background-repeat: no-repeat;
-            color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            line-height: 1.5; padding: 20px;
+            /* ФОН С КОТОМ */
+            background-color: var(--bg-main);
+            background-image: url('cat.png');
+            background-size: cover;
+            background-position: center top;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            
+            color: var(--text-main); 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.5; 
+            padding: 20px;
+            min-height: 100vh;
         }
+        
+        /* Затемнение фона для читаемости текста */
         body::before {
             content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(11, 14, 20, 0.85); z-index: -1;
         }
+
         .container { max-width: 1000px; margin: 0 auto; position: relative; z-index: 1; }
+        
         header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid var(--primary); padding-bottom: 15px; }
         header h1 { font-size: 2rem; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
         header p { color: var(--text-muted); font-size: 1rem; }
         
+        /* Навигация */
         .nav-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 25px; }
-        .nav-btn { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); padding: 12px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.85rem; transition: all 0.2s ease; text-align: center; }
+        .nav-btn { 
+            background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); 
+            padding: 12px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; 
+            text-transform: uppercase; font-size: 0.85rem; transition: all 0.2s ease; 
+            text-align: center; -webkit-tap-highlight-color: transparent;
+        }
         .nav-btn:hover { background: var(--bg-accent); border-color: var(--accent); }
         .nav-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
         
+        /* Контент вкладок */
         .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
-        .section { background: rgba(19, 24, 34, 0.9); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 25px; backdrop-filter: blur(5px); }
+        .section { background: rgba(19, 24, 34, 0.9); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 25px; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
         .section-title { font-size: 1.3rem; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; font-weight: bold; text-transform: uppercase; }
         .section-title.red { color: var(--primary); }
         .section-title.blue { color: var(--accent); }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        /* Таблицы */
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 500px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
         th { background-color: var(--bg-accent); color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
         .nickname { font-weight: bold; color: #fff; }
         
+        /* Бейджи классов */
         .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; background: #263246; color: #cbd5e1; text-transform: uppercase; }
         .badge.class-sns { background: rgba(234, 179, 8, 0.2); color: #fef08a; border: 1px solid rgba(234, 179, 8, 0.4); }
         .badge.class-spear { background: rgba(168, 85, 247, 0.2); color: #e9d5ff; border: 1px solid rgba(168, 85, 247, 0.4); }
         .badge.class-bow { background: rgba(34, 197, 94, 0.2); color: #bbf7d0; border: 1px solid rgba(34, 197, 94, 0.4); }
         .badge.class-dagger { background: rgba(236, 72, 153, 0.2); color: #fbcfe8; border: 1px solid rgba(236, 72, 153, 0.4); }
         
-        .squad-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 15px; }
+        /* Карточки составов */
+        .squad-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 15px; }
         .squad-card { background: rgba(27, 35, 50, 0.95); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; }
         .squad-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px; }
         .squad-title { font-size: 1.1rem; font-weight: bold; color: #fff; }
@@ -64,6 +89,7 @@
         .mem-name { font-weight: bold; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .mem-gs { text-align: right; font-weight: bold; color: #f59e0b; }
         
+        /* Стратегия */
         .strategy-list { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
         .strategy-card { background: rgba(27, 35, 50, 0.95); border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; }
         .card-header-row { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
@@ -72,15 +98,35 @@
         .group-comp { font-size: 0.85rem; color: var(--accent); font-weight: 500; }
         .squads-list { font-size: 0.95rem; color: var(--text-muted); background: var(--bg-card); padding: 4px 10px; border-radius: 4px; border: 1px solid var(--border-color); }
         .card-body-content { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        @media (max-width: 600px) { .card-body-content { grid-template-columns: 1fr; } }
         .targets-zone { display: flex; flex-direction: column; gap: 8px; justify-content: center; }
-        .target-block { display: flex; align-items: center; gap: 8px; font-size: 1rem; }
+        .target-block { display: flex; align-items: center; gap: 8px; font-size: 1rem; flex-wrap: wrap; }
         .target-label { font-size: 0.8rem; color: var(--text-muted); font-weight: bold; min-width: 85px; }
         .target-name { font-weight: bold; padding: 2px 8px; border-radius: 4px; font-size: 1.05rem; }
         .target-primary { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
         .target-secondary { background: rgba(249, 115, 22, 0.15); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.3); }
         .notes-zone { color: var(--text-muted); font-size: 0.95rem; border-left: 3px solid var(--border-color); padding-left: 12px; display: flex; align-items: center; }
+        
         .loading-msg { text-align: center; color: var(--text-muted); padding: 30px; font-style: italic; }
+
+        /* === АДАПТИВНОСТЬ (МОБИЛЬНЫЕ УСТРОЙСТВА) === */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            header h1 { font-size: 1.5rem; }
+            header p { font-size: 0.9rem; }
+            .nav-grid { grid-template-columns: 1fr 1fr; }
+            .nav-btn { font-size: 0.75rem; padding: 10px 4px; }
+            .section { padding: 15px; }
+            .squad-grid { grid-template-columns: 1fr; }
+            .card-body-content { grid-template-columns: 1fr; } /* Стратегия в один столбец */
+            .squad-member { grid-template-columns: 20px 1.2fr 1fr 50px; font-size: 0.85rem; }
+            .squad-member.no-gs { grid-template-columns: 20px 1.2fr 1fr; }
+        }
+        
+        @media (max-width: 480px) {
+            .nav-grid { grid-template-columns: 1fr; }
+            .target-block { flex-direction: column; align-items: flex-start; gap: 4px; }
+            .target-label { min-width: auto; }
+        }
     </style>
 </head>
 <body>
@@ -108,7 +154,7 @@
     <div id="tab-blacklist" class="tab-content">
         <div class="section">
             <div class="section-title red">🚫 АНТИПРИОРИТЕТНЫЕ ТАРГЕТЫ</div>
-            <div style="overflow-x: auto;">
+            <div class="table-responsive">
                 <table><thead><tr><th>Никнейм</th><th>Билд</th><th>Причина</th></tr></thead><tbody id="tbody-blacklist"><tr><td colspan="3" class="loading-msg">Загрузка...</td></tr></tbody></table>
             </div>
         </div>
@@ -117,7 +163,7 @@
     <div id="tab-targets" class="tab-content">
         <div class="section">
             <div class="section-title red">🎯 ПРИОРИТЕТНЫЕ ТАРГЕТЫ</div>
-            <div style="overflow-x: auto;">
+            <div class="table-responsive">
                 <table><thead><tr><th>Никнейм</th><th>Класс</th><th>Причина</th></tr></thead><tbody id="tbody-targets"><tr><td colspan="3" class="loading-msg">Загрузка...</td></tr></tbody></table>
             </div>
         </div>
@@ -165,7 +211,6 @@
         return n;
     });
 
-    // ПАРСЕР ДЛЯ КОЛОНОК (Читает точные индексы)
     function parseGridData(rows) {
         const squads = [];
         let currentSquadLeft = null;
@@ -174,23 +219,19 @@
         rows.forEach(row => {
             if (!row || !row.length) return;
 
-            // --- ЛЕВАЯ ЧАСТЬ (Индексы 0, 1, 2) ---
             const leftCell = (row[0] || '').trim();
-            // Ищем слово "КП" или "Group" в первой колонке
             if (leftCell.includes('КП') || leftCell.toLowerCase().includes('group')) {
                 currentSquadLeft = { title: leftCell, members: [] };
                 squads.push(currentSquadLeft);
             } 
-            // Если есть ник (и это не заголовок "НИКНЕЙМ")
             else if (leftCell && currentSquadLeft && !leftCell.toUpperCase().includes('НИКНЕЙМ')) {
                 currentSquadLeft.members.push({ 
                     nickname: leftCell, 
                     class: (row[1] || '').trim(), 
-                    gs: (row[2] || '').trim() // Берем 3-ю колонку (C) как GS
+                    gs: (row[2] || '').trim()
                 });
             }
 
-            // --- ПРАВАЯ ЧАСТЬ (Индексы 4, 5, 6) ---
             const rightGroupCell = (row[4] || '').trim();
             if (rightGroupCell.includes('КП') || rightGroupCell.toLowerCase().includes('group')) {
                 currentSquadRight = { title: rightGroupCell, members: [] };
@@ -202,7 +243,7 @@
                     currentSquadRight.members.push({ 
                         nickname: rightNickCell, 
                         class: (row[5] || '').trim(), 
-                        gs: (row[6] || '').trim() // Берем 6-ю колонку (G) как GS
+                        gs: (row[6] || '').trim()
                     });
                 }
             }
