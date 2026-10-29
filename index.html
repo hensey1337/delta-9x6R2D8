@@ -109,7 +109,7 @@
     <div class="section">
         <div class="section-title blue">🗺️ РАСПРЕДЕЛЕНИЕ ПАЧЕК ПО ЦЕЛЯМ (5 ДВОЕК + РЕЗЕРВ)</div>
         <div class="desc-text">
-            <p>Мы делим наши 11 пачек на пары. У каждой пары есть <strong>Цель №1</strong> (бьем со старта) и <strong>Цель №2</strong> (на нее переключаемся, как только умерла первая).</p>
+            <p>Мы делим наши 11 пачек на пары. У каждой пары есть <strong>Цель №1</strong> (бьем со старта) and <strong>Цель №2</strong> (на нее переключаемся, как только умерла первая).</p>
         </div>
         <div id="strategy-container" class="strategy-grid">
             <div class="loading-msg">Загрузка тактической схемы...</div>
@@ -117,16 +117,13 @@
     </div>
 </div>
 
-<script src="https://cloudflare.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 <script>
-    // Твой точный ID таблицы со скриншота
-    const SPREADSHEET_ID = '1eCCexMp399TImDlQDFDPyyzgZNkhn0nqGJvsTndruNQ';
+    const PUB_KEY = '2PACX-1vSAdKvnDfusW0YrdnJgV3Wd3swPgFvKJRmSSQ1zc0aN2mxuBPpu2DvqzSwDnJqPeBHvFFV57e_ZJnR8';
     
-    // Ссылки по текстовым именам листов (теперь работают идеально, так как доступ открыт для всех)
-    const URL_BLACKLIST = `https://google.com{SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Blacklist`;
-    const URL_STRATEGY = `https://google.com{SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Strategy`;
+    const URL_BLACKLIST = `https://docs.google.com/spreadsheets/d/e/${PUB_KEY}/pub?output=csv&gid=0`;
+    const URL_STRATEGY = `https://docs.google.com/spreadsheets/d/e/${PUB_KEY}/pub?output=csv&gid=2058197677`;
 
-    // Загрузка Черного Списка
     Papa.parse(URL_BLACKLIST, {
         download: true,
         header: true,
@@ -141,8 +138,8 @@
             }
 
             results.data.forEach(row => {
-                const nickname = row.Nickname || row.nickname;
-                if (!nickname) return;
+                const nickname = row.Nickname || row.nickname || row['Nickname'] || '';
+                if (!nickname || nickname.trim() === '') return;
                 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -158,7 +155,6 @@
         }
     });
 
-    // Загрузка Стратегии
     Papa.parse(URL_STRATEGY, {
         download: true,
         header: true,
@@ -173,8 +169,8 @@
             }
 
             results.data.forEach(row => {
-                const group = row.Group || row.group;
-                if (!group) return;
+                const group = row.Group || row.group || '';
+                if (!group || group.trim() === '') return;
                 
                 const card = document.createElement('div');
                 card.className = 'strategy-card';
@@ -184,3 +180,38 @@
                 const t2 = row.Target2 || row.target2 || '';
                 const squads = row.Squads || row.squads || '';
                 const notes = row.Notes || row.notes || '';
+                const compText = row['group composition'] || row['Group composition'] || row['group_composition'] || '';
+                
+                if (t1 && t1 !== '—' && t1.trim() !== '') {
+                    targetsHtml += `<div class="target-block"><span class="target-label">🎯 ЦЕЛЬ №1:</span> <span class="target-name target-primary">${t1}</span></div>`;
+                }
+                if (t2 && t2 !== '—' && t2.trim() !== '') {
+                    targetsHtml += `<div class="target-block"><span class="target-label">🔄 ЦЕЛЬ №2:</span> <span class="target-name target-secondary">${t2}</span></div>`;
+                }
+
+                const compHtml = compText.trim() ? `<div class="group-comp">[ ${compText.trim()} ]</div>` : '';
+
+                card.innerHTML = `
+                    <div class="card-header-row">
+                        <div class="group-info">
+                            <div class="group-title">${group}</div>
+                            ${compHtml}
+                        </div>
+                        <div class="squads-list">${squads || '—'}</div>
+                    </div>
+                    <div class="card-body-content">
+                        <div class="targets-zone">${targetsHtml || '<span style="color:var(--text-muted); font-style:italic;">Свободная охота / Резерв</span>'}</div>
+                        <div class="notes-zone">${notes || '—'}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        },
+        error: function() {
+            document.getElementById('strategy-container').innerHTML = `<div class="error-msg" style="text-align:center; padding: 20px;">Ошибка загрузки тактической схемы.</div>`;
+        }
+    });
+</script>
+
+</body>
+</html>
