@@ -16,23 +16,25 @@ body {
     overflow-x: hidden;
 }
 
-/* === ОТДЕЛЬНЫЙ СЛОЙ ДЛЯ КОТА === */
+/* === СЛОЙ С КОТОМ === */
 .bg-cat {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     background-image: url('cat.png');
-    background-size: cover;
+    
+    /* ВОТ ГЛАВНОЕ ИСПРАВЛЕНИЕ: */
+    background-size: 100% 100%; /* Растягивает картинку ровно на весь экран (игнорирует пропорции) */
     background-position: center center;
     background-repeat: no-repeat;
     z-index: -2;
 }
 
-/* === ЗАТЕМНЕНИЕ ПОВЕРХ КОТА (чтобы текст читался) === */
+/* Затемнение поверх кота (чтобы текст читался) */
 .bg-cat::after {
     content: "";
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(11, 14, 20, 0.75); /* Регулируйте 0.75 (чем меньше, тем ярче кот) */
+    background: rgba(11, 14, 20, 0.65); /* Чем меньше цифра, тем ярче кот */
 }
 
 .container { max-width: 1000px; margin: 0 auto; position: relative; z-index: 1; }
