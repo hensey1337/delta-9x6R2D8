@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ТАКТИЧЕСКОЕ РУКОВОДСТВО: ОПЕРАЦИЯ «АНТИ-ЗЕРГ»</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f111a;
+            --panel-bg: #161925;
+            --accent-red: #ff4655;
+            --accent-orange: #ff8c00;
+            --text-main: #f8f9fa;
+            --text-muted: #9aa0a6;
+            --border-color: #2a2e3f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--accent-red);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: var(--accent-red);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .section {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .blacklist-title { color: #ff3333; }
+        .strategy-title { color: #00ffff; }
+
+        p {
+            margin-bottom: 10px;
+            color: #e2e8f0;
+        }
+
+        strong {
+            color: #fff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background-color: rgba(0,0,0,0.2);
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: rgba(0,0,0,0.4);
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        tr:hover {
+            background-color: rgba(255,255,255,0.02);
+        }
+
+        .badge-red {
+            background-color: rgba(255, 70, 85, 0.15);
+            color: var(--accent-red);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            border: 1px solid rgba(255, 70, 85, 0.3);
+        }
+
+        .badge-orange {
+            background-color: rgba(255, 140, 0, 0.15);
+            color: var(--accent-orange);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            border: 1px solid rgba(255, 140, 0, 0.3);
+        }
+
+        .ignore-tag {
+            color: #ff3333;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            tr {
+                border: 1px solid var(--border-color);
+                margin-bottom: 15px;
+                border-radius: 6px;
+                background: rgba(0,0,0,0.15);
+                padding: 10px;
+            }
+            td {
+                border: none;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+                position: relative;
+                padding-left: 45%;
+                text-align: right;
+            }
+            td:last-child {
+                border-bottom: none;
+            }
+            td:before {
+                position: absolute;
+                top: 12px;
+                left: 15px;
+                width: 40%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: bold;
+                color: var(--text-muted);
+                font-size: 0.85rem;
+                text-transform: uppercase;
+            }
+            
+            /* Селекторы для адаптивной таблицы стратегии */
+            .strategy-table td:nth-of-type(1):before { content: "Группа"; }
+            .strategy-table td:nth-of-type(2):before { content: "Состав"; }
+            .strategy-table td:nth-of-type(3):before { content: "Цель №1"; }
+            .strategy-table td:nth-of-type(4):before { content: "Цель №2"; }
+            .strategy-table td:nth-of-type(5):before { content: "Задачи / Заметки"; }
+
+            /* Селекторы для адаптивной таблицы черного списка */
+            .blacklist-table td:nth-of-type(1):before { content: "Никнейм"; }
+            .blacklist-table td:nth-of-type(2):before { content: "Сборка"; }
+            .blacklist-table td:nth-of-type(3):before { content: "Почему игнор"; }
+            
+            td { padding-left: 45%; text-align: right; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>⚔️ Операция «АНТИ-ЗЕРГ»</h1>
+        <div class="subtitle">Тактическое руководство по ликвидации рейда lDarkness</div>
+    </header>
+
+    <!-- СМЫСЛ СТРАТЕГИИ -->
+    <div class="section">
+        <h2>🎯 Главный смысл стратегии</h2>
+        <p>Сила вражеского зерга держится всего на <strong>7–8 ключевых игроках</strong>, которые дают 80% всего урона. Остальная масса из их 4 гильдий (особенно подсосы вроде <em>50Lucent</em>) — это беспомощное мясо без первых 8-ми. При этом гильдия <em>llDarkness</em> играет как мясо — у них несформированные пачки, которые умирают без особых проблем.</p>
+        <p><strong>Наша задача:</strong> В первые 10 секунд замеса моментально взорвать их главных ДД. Как только они упадут, у врага исчезнет урон. Пока их топы будут нажимать респ и «дотекать» обратно, поле боя останется беззубым. В этот момент мы включаем каток и зачищаем оставшуюся массу, которая без своих лидеров просто запаникует.</p>
+    </div>
+
+    <!-- ЧЕРНЫЙ СПИСОК -->
+    <div class="section">
+        <h2 class="blacklist-title">🚫 ЧЕРНЫЙ СПИСОК (АБСОЛЮТНЫЙ ИГНОР)</h2>
+        <div id="blacklist-container" class="loading">Загрузка данных из Google Таблиц...</div>
+    </div>
+
+    <!-- ТАКТИЧЕСКАЯ ТАБЛИЦА -->
+    <div class="section">
+        <h2 class="strategy-title">🗺️ РАСПРЕДЕЛЕНИЕ ПАЧЕК ПО ЦЕЛЯМ (5 ДВОЕК + РЕЗЕРВ)</h2>
+        <div id="strategy-container" class="loading">Загрузка данных из Google Таблиц...</div>
+    </div>
+</div>
+
+<script>
+    // Твой ID Гугл Таблицы (Замени на свой, если нужно)
+    const SPREADSHEET_ID = '1XfBEx_McjVlO_T3vW6D59eRux6bS41g23t3p5fM-X8M'; 
+
+    // Формируем ссылки для экспорта конкретных листов в CSV формат
+    const blacklistUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Blacklist`;
+    const strategyUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Strategy`;
+
+    // Загрузка Черного Списка
+    Papa.parse(blacklistUrl, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+            let data = results.data;
+            if(data.length === 0) {
+                document.getElementById('blacklist-container').innerHTML = "Таблица черного списка пуста.";
+                return;
+            }
+            
+            let html = '<table class="blacklist-table"><thead><tr><th>Никнейм</th><th>Сборка</th><th>Почему игнорируем?</th></tr></thead><tbody>';
+            data.forEach(row => {
+                html += `<tr>
+                    <td class="ignore-tag">❌ ${row.Nickname || row.nickname || ''}</td>
+                    <td>${row.Setup || row.setup || ''}</td>
+                    <td><strong>${row.Reason || row.reason || ''}</strong></td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            document.getElementById('blacklist-container').innerHTML = html;
+        },
+        error: function() {
+            document.getElementById('blacklist-container').innerHTML = "<span style='color:red;'>Ошибка загрузки листа 'Blacklist'. Проверьте публикацию таблицы.</span>";
+        }
+    });
+
+    // Загрузка Стратегии
+    Papa.parse(strategyUrl, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+            let data = results.data;
+            if(data.length === 0) {
+                document.getElementById('strategy-container').innerHTML = "Таблица стратегии пуста.";
+                return;
+            }
+            
+            let html = '<table class="strategy-table"><thead><tr><th>Боевая группа</th><th>Состав</th><th>🎯 ЦЕЛЬ №1</th><th>🔄 ЦЕЛЬ №2</th><th>Особенности и задачи пачек</th></tr></thead><tbody>';
+            data.forEach(row => {
+                let target1Class = row.Target1 && row.Target1 !== '—' && row.Target1 !== '-' ? 'class="badge-red"' : '';
+                let target2Class = row.Target2 && row.Target2 !== '—' && row.Target2 !== '-' ? 'class="badge-orange"' : '';
+                
+                html += `<tr>
+                    <td><strong>${row.Group || row.group || ''}</strong></td>
+                    <td>${row.Squads || row.squads || ''}</td>
+                    <td><span ${target1Class}>${row.Target1 || row.target1 || ''}</span></td>
+                    <td><span ${target2Class}>${row.Target2 || row.target2 || ''}</span></td>
+                    <td>${row.Notes || row.notes || ''}</td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            document.getElementById('strategy-container').innerHTML = html;
+        },
+        error: function() {
+            document.getElementById('strategy-container').innerHTML = "<span style='color:red;'>Ошибка загрузки листа 'Strategy'. Проверьте публикацию таблицы.</span>";
+        }
+    });
+</script>
+
+</body>
+</html>
