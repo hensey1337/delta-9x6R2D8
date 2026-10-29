@@ -56,6 +56,7 @@
         .squad-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px; }
         .squad-title { font-size: 1.1rem; font-weight: bold; color: #fff; }
         .squad-num { font-size: 0.85rem; background: var(--bg-card); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border-color); color: var(--text-muted); }
+        
         .squad-member { display: grid; grid-template-columns: 25px 1.2fr 1fr 60px; padding: 6px 0; border-bottom: 1px solid rgba(38, 50, 70, 0.5); align-items: center; font-size: 0.9rem; }
         .squad-member.no-gs { grid-template-columns: 25px 1.2fr 1fr; }
         .squad-member:last-child { border-bottom: none; }
@@ -164,7 +165,7 @@
         return n;
     });
 
-    // ЖЕСТКИЙ ПАРСЕР ДЛЯ СЕТКИ В 2 КОЛОНКИ
+    // УМНЫЙ ПАРСЕР ДЛЯ КОЛОНОК (Сканирует строку и раскладывает по типам)
     function parseGridData(rows) {
         const squads = [];
         let currentSquadLeft = null;
@@ -173,27 +174,31 @@
         rows.forEach(row => {
             if (!row || !row.length) return;
 
-            // --- ЛЕВАЯ КОЛОНКА (Индексы 0, 1, 2, 3, 4) ---
+            // --- ЛЕВАЯ ЧАСТЬ (Индексы 0, 1, 2) ---
             const leftCell = (row[0] || '').trim();
-            
             if (leftCell.toLowerCase().includes('group')) {
                 currentSquadLeft = { title: leftCell, members: [] };
                 squads.push(currentSquadLeft);
             } 
             else if (leftCell && currentSquadLeft && !leftCell.toLowerCase().includes('nickname') && !leftCell.toLowerCase().includes('никнейм')) {
-                const comment = (row[2] || '').trim(); // Если есть колонка Comment
-                const mem = { 
-                    nickname: leftCell, 
-                    class: (row[1] || '').trim(), 
-                    gs: (row[3] || '').trim() 
-                };
-                if (comment && comment.toLowerCase() !== 'comment') {
-                    mem.nickname += ` [${comment}]`;
+                // Собираем данные левого игрока
+                let nick = leftCell;
+                let cls = '';
+                let gs = '';
+                
+                // Проверяем оставшиеся ячейки строки (1, 2, 3)
+                for(let i = 1; i <= 3; i++) {
+                    const val = (row[i] || '').trim();
+                    if (!val || val.toLowerCase() === 'class' || val.toLowerCase() === 'gs') continue;
+                    
+                    if (isNaN(val) || val.length < 3) cls = val; // Если это не число (SNS/GS), то это класс
+                    else gs = val; // Если число (5400), то это GS
                 }
-                currentSquadLeft.members.push(mem);
+                
+                currentSquadLeft.members.push({ nickname: nick, class: cls, gs: gs });
             }
 
-            // --- ПРАВАЯ КОЛОНКА (Индексы 5, 6, 7, 8) ---
+            // --- ПРАВАЯ ЧАСТЬ (Индексы 5, 6, 7) ---
             const rightGroupCell = (row[5] || '').trim();
             if (rightGroupCell.toLowerCase().includes('group')) {
                 currentSquadRight = { title: rightGroupCell, members: [] };
@@ -201,20 +206,21 @@
             } 
             else {
                 const rightNickCell = (row[6] || '').trim();
-                const rightClassCell = (row[7] || '').trim();
-                const rightGsCell = (row[8] || '').trim();
-                const rightComment = (row[9] || '').trim(); // Если есть колонка Comment
-
                 if (rightNickCell && currentSquadRight && !rightNickCell.toLowerCase().includes('nickname') && !rightNickCell.toLowerCase().includes('никнейм')) {
-                    const mem = { 
-                        nickname: rightNickCell, 
-                        class: rightClassCell, 
-                        gs: rightGsCell 
-                    };
-                    if (rightComment && rightComment.toLowerCase() !== 'comment') {
-                        mem.nickname += ` [${rightComment}]`;
+                    
+                    let nick = rightNickCell;
+                    let cls = '';
+                    let gs = '';
+                    
+                    for(let i = 7; i <= 9; i++) {
+                        const val = (row[i] || '').trim();
+                        if (!val || val.toLowerCase() === 'class' || val.toLowerCase() === 'gs') continue;
+                        
+                        if (isNaN(val) || val.length < 3) cls = val;
+                        else gs = val;
                     }
-                    currentSquadRight.members.push(mem);
+                    
+                    currentSquadRight.members.push({ nickname: nick, class: cls, gs: gs });
                 }
             }
         });
@@ -304,7 +310,7 @@
 
     Papa.parse(URLS.blacklist, { download: true, header: true, skipEmptyLines: true, complete: res => renderTable('tbody-blacklist', normalizeFlatData(res.data)) });
     Papa.parse(URLS.targets, { download: true, header: true, skipEmptyLines: true, complete: res => renderTable('tbody-targets', normalizeFlatData(res.data), true) });
-    Papa.parse(URLS.strategy, { download: true, header: true, skipEmptyLines: true, complete: res => renderStrategy(normalizeFlatData(res.data)) });
+    Papa.parse(URLS.strategy, { download: true, header: true, skipEmptyLines: true, complete: res => renderStats(normalizeFlatData(res.data)) }); // renderStats заменен на renderStrategy
 </script>
 </body>
 </html>
