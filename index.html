@@ -1,182 +1,126 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Операция «АНТИ-ЗЕРГ» — Руководство</title>
-    <style>
-        :root {
-            --bg-main: #0b0e14;
-            --bg-card: #131822;
-            --bg-accent: #1b2332;
-            --border-color: #263246;
-            --text-main: #e2e8f0;
-            --text-muted: #94a3b8;
-            --primary: #ef4444;
-            --secondary: #f97316;
-            --accent: #3b82f6;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.5;
-            padding: 20px;
-        }
-        .container { max-width: 1000px; margin: 0 auto; }
-        header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid var(--primary); padding-bottom: 15px; }
-        header h1 { font-size: 2rem; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
-        header p { color: var(--text-muted); font-size: 1rem; }
-        
-        .section { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 25px; }
-        .section-title { font-size: 1.3rem; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
-        .section-title.red { color: var(--primary); }
-        .section-title.blue { color: var(--accent); }
-        
-        .desc-text p { margin-bottom: 12px; color: var(--text-main); }
-        .desc-text strong { color: #fff; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
-        th { background-color: var(--bg-accent); color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; }
-        .nickname { font-weight: bold; color: #fff; }
-        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; background: #334155; color: #cbd5e1; }
-        
-        .strategy-grid { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
-        .strategy-card { background: var(--bg-accent); border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; }
-        .card-header-row { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
-        .group-info { display: flex; flex-direction: column; gap: 2px; }
-        .group-title { font-size: 1.2rem; font-weight: bold; color: #fff; }
-        .group-comp { font-size: 0.85rem; color: var(--accent); font-weight: 500; }
-        .squads-list { font-size: 0.95rem; color: var(--text-muted); background: var(--bg-card); padding: 4px 10px; border-radius: 4px; border: 1px solid var(--border-color); }
-        
-        .card-body-content { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        @media (max-width: 600px) { .card-body-content { grid-template-columns: 1fr; } }
-        
-        .targets-zone { display: flex; flex-direction: column; gap: 8px; justify-content: center; }
-        .target-block { display: flex; align-items: center; gap: 8px; font-size: 1rem; }
-        .target-label { font-size: 0.8rem; color: var(--text-muted); font-weight: bold; min-width: 85px; }
-        .target-name { font-weight: bold; padding: 2px 8px; border-radius: 4px; font-size: 1.05rem; }
-        .target-primary { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-        .target-secondary { background: rgba(249, 115, 22, 0.15); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.3); }
-        .notes-zone { color: var(--text-muted); font-size: 0.95rem; border-left: 3px solid var(--border-color); padding-left: 12px; display: flex; align-items: center; }
-        
-        .loading-msg { text-align: center; color: var(--text-muted); padding: 20px; font-style: italic; }
-        .error-msg { color: #f87171; text-align: center; padding: 10px; font-weight: bold; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <header>
-        <h1>⚔️ Операция «АНТИ-ЗЕРГ»</h1>
-        <p>Тактическое руководство по ликвидации рейда lDarkness</p>
-    </header>
-
-    <!-- Главный смысл -->
-    <div class="section">
-        <div class="section-title">🎯 Главный смысл стратегии</div>
-        <div class="desc-text">
-            <p>Сила вражеского зерга держится всего на <strong>7–8 ключевых игроках</strong>, которые дают 80% всего урона. Остальная масса из их 4 гильдий (особенно подсосы вроде 50Lucent) — это беспомощное мясо без первых 8-ми. При этом гильдия <em>llDarkness</em> играет как мясо — у них несформированные пачки, которые умирают без особых проблем.</p>
-            <p><strong>Наша задача:</strong> В первые 10 секунд замеса моментально взорвать их главных ДД. Как только они упадут, у врага исчезнет урон. Пока их топы будут нажимать респ и «дотекать» обратно, поле боя останется беззубым. В этот момент мы включаем каток и зачищаем оставшуюся массу, которая без своих лидеров просто запаникует.</p>
-        </div>
-    </div>
-
-    <!-- Черный список -->
-    <div class="section">
-        <div class="section-title red">🚫 ЧЕРНЫЙ СПИСОК (АБСОЛЮТНЫЙ ИГНОР)</div>
-        <div class="desc-text" style="margin-bottom: 15px;">
-            <p>Они переоделись в фулл-деф (эндюра / эвага). Урона у них <strong>НЕТ</strong>. Они будут нарочно прыгать вам в лицо, чтобы сбайить на себя наш урон. <strong>Если вы их бьете — вы проиграли замес.</strong></p>
-        </div>
-        <div style="overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Никнейм</th>
-                        <th>Сборка</th>
-                        <th>Почему игнорируем?</th>
-                    </tr>
-                </thead>
-                <tbody id="blacklist-body">
-                    <tr><td colspan="3" class="loading-msg">Загрузка данных из таблицы...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Распределение пачек -->
-    <div class="section">
-        <div class="section-title blue">🗺️ РАСПРЕДЕЛЕНИЕ ПАЧЕК ПО ЦЕЛЯМ (5 ДВОЕК + РЕЗЕРВ)</div>
-        <div class="desc-text">
-            <p>Мы делим наши 11 пачек на пары. У каждой пары есть <strong>Цель №1</strong> (бьем со старта) и <strong>Цель №2</strong> (на нее переключаемся, как только умерла первая).</p>
-        </div>
-        <div id="strategy-container" class="strategy-grid">
-            <div class="loading-msg">Загрузка тактической схемы...</div>
-        </div>
-    </div>
-</div>
-
-<script src="https://cloudflare.com"></script>
 <script>
-    // Правильный ID твоей Гугл-таблицы, взятый со скриншота
+    // Полноценный и быстрый загрузчик по текстовым именам вкладок
     const SPREADSHEET_ID = '1eCCexMp399TImDlQDFDPyyzgZNkhn0nqGJvsTndruNQ';
     
-    // Прямые ссылки на CSV-потоки для моментальной загрузки
-    const URL_BLACKLIST = `https://google.com{SPREADSHEET_ID}/export?format=csv&gid=0`;
-    const URL_STRATEGY = `https://google.com{SPREADSHEET_ID}/export?format=csv&gid=2058197677`;
+    // Ссылки на получение CSV по точным названиям листов, как у тебя в таблице
+    const URL_BLACKLIST = `https://google.com{SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Blacklist`;
+    const URL_STRATEGY = `https://google.com{SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Strategy`;
 
-    // Загрузка Blacklist
-    Papa.parse(URL_BLACKLIST, {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
+    // Функция для простой очистки кавычек Гугла
+    function clean(val) {
+        if (!val) return '';
+        return val.replace(/^"|"$/g, '').trim();
+    }
+
+    // Парсер CSV формата, который делает всё сам без сторонних библиотек
+    function parseCSV(text) {
+        const lines = text.split('\n');
+        if (lines.length === 0) return [];
+        
+        // Читаем заголовки колонок
+        const headers = lines[0].split(',').map(h => clean(h).toLowerCase());
+        const result = [];
+        
+        for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue;
+            
+            // Защита от запятых внутри ячеек (разбиваем с учетом кавычек)
+            const matches = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(',');
+            const row = {};
+            
+            headers.forEach((header, index) => {
+                row[header] = matches[index] ? clean(matches[index]) : '';
+            });
+            result.push(row);
+        }
+        return result;
+    }
+
+    // Загружаем Черный Список
+    fetch(URL_BLACKLIST)
+        .then(res => res.text())
+        .then(text => {
+            const data = parseCSV(text);
             const tbody = document.getElementById('blacklist-body');
             tbody.innerHTML = '';
             
-            if (!results.data || results.data.length === 0) {
+            if (data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color: var(--text-muted);">Черный список пуст</td></tr>`;
                 return;
             }
 
-            results.data.forEach(row => {
-                if (!row.Nickname) return;
+            data.forEach(row => {
+                // Ищем колонку независимо от регистра букв
+                const nickname = row.nickname || row.Nickname;
+                if (!nickname) return;
+                
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td class="nickname">❌ ${row.Nickname}</td>
-                    <td><span class="badge">${row.Setup || '—'}</span></td>
-                    <td style="color: var(--text-muted);">${row.Reason || '—'}</td>
+                    <td class="nickname">❌ ${nickname}</td>
+                    <td><span class="badge">${row.setup || '—'}</span></td>
+                    <td style="color: var(--text-muted);">${row.reason || '—'}</td>
                 `;
                 tbody.appendChild(tr);
             });
-        },
-        error: function() {
-            document.getElementById('blacklist-body').innerHTML = `<tr><td colspan="3" class="error-msg">Ошибка загрузки Blacklist. Проверьте, открыт ли доступ к таблице.</td></tr>`;
-        }
-    });
+        })
+        .catch(() => {
+            document.getElementById('blacklist-body').innerHTML = `<tr><td colspan="3" class="error-msg">Ошибка загрузки Blacklist. Проверьте права доступа.</td></tr>`;
+        });
 
-    // Загрузка Strategy
-    Papa.parse(URL_STRATEGY, {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
+    // Загружаем Основную Стратегию
+    fetch(URL_STRATEGY)
+        .then(res => res.text())
+        .then(text => {
+            const data = parseCSV(text);
             const container = document.getElementById('strategy-container');
             container.innerHTML = '';
 
-            if (!results.data || results.data.length === 0) {
+            if (data.length === 0) {
                 container.innerHTML = `<p style="text-align:center; color: var(--text-muted);">Стратегия еще не заполнена</p>`;
                 return;
             }
 
-            results.data.forEach(row => {
-                if (!row.Group) return;
+            data.forEach(row => {
+                const group = row.group || row.Group;
+                if (!group) return;
+                
                 const card = document.createElement('div');
                 card.className = 'strategy-card';
                 
                 let targetsHtml = '';
-                if (row.Target1 && row.Target1 !== '—' && row.Target1.trim() !== '') {
-                    targetsHtml += `<div class="target-block"><span class="target-label">🎯 ЦЕЛЬ №1:</span> <span class="target-name target-primary">${row.Target1}</span></div>`;
+                const t1 = row.target1 || '';
+                const t2 = row.target2 || '';
+                const squads = row.squads || '';
+                const notes = row.notes || '';
+                
+                if (t1 && t1 !== '—') {
+                    targetsHtml += `<div class="target-block"><span class="target-label">🎯 ЦЕЛЬ №1:</span> <span class="target-name target-primary">${t1}</span></div>`;
                 }
-                if (row.Target2 && row.Target2 !== '—' && row.Target2.trim() !== '') {
+                if (t2 && t2 !== '—') {
+                    targetsHtml += `<div class="target-block"><span class="target-label">🔄 ЦЕЛЬ №2:</span> <span class="target-name target-secondary">${t2}</span></div>`;
+                }
+
+                // Вытаскиваем колонку состава групп (group composition)
+                const compText = row['group composition'] || '';
+                const compHtml = compText ? `<div class="group-comp">[ ${compText} ]</div>` : '';
+
+                card.innerHTML = `
+                    <div class="card-header-row">
+                        <div class="group-info">
+                            <div class="group-title">${group}</div>
+                            ${compHtml}
+                        </div>
+                        <div class="squads-list">${squads || '—'}</div>
+                    </div>
+                    <div class="card-body-content">
+                        <div class="targets-zone">${targetsHtml || '<span style="color:var(--text-muted); font-style:italic;">Свободная охота / Резерв</span>'}</div>
+                        <div class="notes-zone">${notes || '—'}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        })
+        .catch(() => {
+            document.getElementById('strategy-container').innerHTML = `<div class="error-msg" style="text-align:center; padding: 20px;">Ошибка загрузки тактической схемы.</div>`;
+        });
+</script>
