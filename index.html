@@ -74,7 +74,6 @@
         <p>Тактическое руководство по ликвидации рейда lDarkness</p>
     </header>
 
-    <!-- Главный смысл -->
     <div class="section">
         <div class="section-title">🎯 Главный смысл стратегии</div>
         <div class="desc-text">
@@ -83,7 +82,6 @@
         </div>
     </div>
 
-    <!-- Черный список -->
     <div class="section">
         <div class="section-title red">🚫 ЧЕРНЫЙ СПИСОК (АБСОЛЮТНЫЙ ИГНОР)</div>
         <div class="desc-text" style="margin-bottom: 15px;">
@@ -105,7 +103,6 @@
         </div>
     </div>
 
-    <!-- Распределение пачек -->
     <div class="section">
         <div class="section-title blue">🗺️ РАСПРЕДЕЛЕНИЕ ПАЧЕК ПО ЦЕЛЯМ (5 ДВОЕК + РЕЗЕРВ)</div>
         <div class="desc-text">
@@ -124,6 +121,20 @@
     const URL_BLACKLIST = `https://docs.google.com/spreadsheets/d/e/${PUB_KEY}/pub?output=csv&gid=0`;
     const URL_STRATEGY = `https://docs.google.com/spreadsheets/d/e/${PUB_KEY}/pub?output=csv&gid=2058197677`;
 
+    // Умная функция для поиска ключей объектов без учета регистра и скрытых символов Гугла
+    function findValue(obj, possibleKeys) {
+        const cleanKeys = Object.keys(obj).map(k => k.toLowerCase().replace(/[\s_\-"']/g, '').trim());
+        for (let key of possibleKeys) {
+            const searchKey = key.toLowerCase().replace(/[\s_\-"']/g, '').trim();
+            const index = cleanKeys.indexOf(searchKey);
+            if (index !== -1) {
+                return obj[Object.keys(obj)[index]];
+            }
+        }
+        return '';
+    }
+
+    // Загрузка Черного Списка
     Papa.parse(URL_BLACKLIST, {
         download: true,
         header: true,
@@ -138,23 +149,31 @@
             }
 
             results.data.forEach(row => {
-                const nickname = row.Nickname || row.nickname || row['Nickname'] || '';
+                const nickname = findValue(row, ['nickname', 'никнейм', 'ник']);
                 if (!nickname || nickname.trim() === '') return;
+                
+                const setup = findValue(row, ['setup', 'сборка', 'билд']);
+                const reason = findValue(row, ['reason', 'почему игнорируем', 'причина']);
                 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="nickname">❌ ${nickname}</td>
-                    <td><span class="badge">${row.Setup || row.setup || '—'}</span></td>
-                    <td style="color: var(--text-muted);">${row.Reason || row.reason || '—'}</td>
+                    <td><span class="badge">${setup || '—'}</span></td>
+                    <td style="color: var(--text-muted);">${reason || '—'}</td>
                 `;
                 tbody.appendChild(tr);
             });
+            
+            if(tbody.innerHTML === '') {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color: var(--text-muted);">Не удалось распознать колонку Nickname. Проверьте первую строчку таблицы.</td></tr>`;
+            }
         },
         error: function() {
             document.getElementById('blacklist-body').innerHTML = `<tr><td colspan="3" class="error-msg">Ошибка загрузки Blacklist.</td></tr>`;
         }
     });
 
+    // Загрузка Стратегии
     Papa.parse(URL_STRATEGY, {
         download: true,
         header: true,
@@ -169,19 +188,19 @@
             }
 
             results.data.forEach(row => {
-                const group = row.Group || row.group || '';
+                const group = findValue(row, ['group', 'группа']);
                 if (!group || group.trim() === '') return;
                 
                 const card = document.createElement('div');
                 card.className = 'strategy-card';
                 
-                let targetsHtml = '';
-                const t1 = row.Target1 || row.target1 || '';
-                const t2 = row.Target2 || row.target2 || '';
-                const squads = row.Squads || row.squads || '';
-                const notes = row.Notes || row.notes || '';
-                const compText = row['group composition'] || row['Group composition'] || row['group_composition'] || '';
+                const t1 = findValue(row, ['target1', 'цель1', 'цель №1']);
+                const t2 = findValue(row, ['target2', 'цель2', 'цель №2']);
+                const squads = findValue(row, ['squads', 'пачки']);
+                const notes = findValue(row, ['notes', 'примечание', 'заметки']);
+                const compText = findValue(row, ['group composition', 'состав группы', 'composition', 'groupcomposition']);
                 
+                let targetsHtml = '';
                 if (t1 && t1 !== '—' && t1.trim() !== '') {
                     targetsHtml += `<div class="target-block"><span class="target-label">🎯 ЦЕЛЬ №1:</span> <span class="target-name target-primary">${t1}</span></div>`;
                 }
