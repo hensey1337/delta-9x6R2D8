@@ -1,12 +1,16 @@
 const PUB_KEY = '2PACX-1vSAdKvnDfusW0YrdnJgV3Wd3swPgFvKJRmSSQ1zc0aN2mxuBPpu2DvqzSwDnJqPeBHvFFV57e_ZJnR8';
+
+// Функция для генерации ссылки (с защитой от кэша)
+const getUrl = (gid) => `https://docs.google.com/spreadsheets/d/e/${PUB_KEY}/pub?output=csv&gid=${gid}&cachebust=${Date.now()}`;
+
 const URLS = {
-    qwe: `https://docs.google.com/spreadsheets/d/e/${PUB_KEY}/pub?output=csv&gid=1505585512`,
-    dd: `https://docs.google.com/spreadsheets/d/e/${PUB_KEY}/pub?output=csv&gid=643049503`,
-    dark1: `https://docs.google.com/spreadsheets/d/e/${PUB_KEY}/pub?output=csv&gid=993416369`,
-    dark11: `https://docs.google.com/spreadsheets/d/e/${PUB_KEY}/pub?output=csv&gid=1257870261`,
-    blacklist: `https://docs.google.com/spreadsheets/d/e/${PUB_KEY}/pub?output=csv&gid=0`,
-    targets: `https://docs.google.com/spreadsheets/d/e/${PUB_KEY}/pub?output=csv&gid=1730228249`,
-    strategy: `https://docs.google.com/spreadsheets/d/e/${PUB_KEY}/pub?output=csv&gid=2058197677`
+    qwe: getUrl('1505585512'),
+    dd: getUrl('643049503'),
+    dark1: getUrl('993416369'),
+    dark11: getUrl('1257870261'),
+    blacklist: getUrl('0'),
+    targets: getUrl('1730228249'),
+    strategy: getUrl('2058197677')
 };
 
 window.switchTab = (id, btn) => {
@@ -152,7 +156,6 @@ const loadSquad = (url, containerId) => {
     });
 };
 
-// Запуск
 loadSquad(URLS.qwe, 'container-qwe');
 loadSquad(URLS.dd, 'container-dd');
 loadSquad(URLS.dark1, 'container-dark1');
