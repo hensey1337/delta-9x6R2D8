@@ -63,11 +63,6 @@
         .mem-name { font-weight: bold; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .mem-gs { text-align: right; font-weight: bold; color: #f59e0b; }
         
-        .stats-box { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
-        .stat-card { background: var(--bg-accent); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; text-align: center; }
-        .stat-val { font-size: 1.5rem; font-weight: bold; color: var(--accent); }
-        .stat-lbl { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
-        
         .strategy-list { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
         .strategy-card { background: rgba(27, 35, 50, 0.95); border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; }
         .card-header-row { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
@@ -128,7 +123,6 @@
     </div>
 
     <div id="tab-strategy" class="tab-content">
-        <div class="section"><div class="section-title blue">📊 Аналитика классов</div><div id="container-stats" class="stats-box"><div class="loading-msg">Загрузка...</div></div></div>
         <div class="section"><div class="section-title blue">🗺️ Распределение двоек</div><div id="container-strategy" class="strategy-list"><div class="loading-msg">Загрузка...</div></div></div>
     </div>
 </div>
@@ -170,48 +164,59 @@
         return n;
     });
 
-    // УМНЫЙ ПАРСЕР СЕТКИ (собирает всех подряд)
+    // ЖЕСТКИЙ ПАРСЕР ДЛЯ СЕТКИ В 2 КОЛОНКИ
     function parseGridData(rows) {
         const squads = [];
-        let currentSquad = null;
+        let currentSquadLeft = null;
+        let currentSquadRight = null;
 
         rows.forEach(row => {
             if (!row || !row.length) return;
 
-            row.forEach(cell => {
-                const val = (cell || '').trim();
-                if (!val) return;
-
-                const low = val.toLowerCase();
-
-                // Если нашли заголовок группы — создаем новую пачку
-                if (low.includes('group') || low.includes('группа')) {
-                    currentSquad = { title: val, members: [] };
-                    squads.push(currentSquad);
-                } 
-                // Пропускаем заголовки колонок
-                else if (low === 'nickname' || low === 'никнейм' || low === 'class' || low === 'класс' || low === 'gs' || low === 'гир скор') {
-                    return; 
-                } 
-                // Если есть текст и это не цифры (гирскор), добавляем игрока
-                else if (currentSquad && isNaN(val) && val !== '—' && val !== '-') {
-                    // Игнорируем классы, чтобы они не попали в ники
-                    if (!low.includes('sns') && !low.includes('spear') && !low.includes('bow') && !low.includes('dagger')) {
-                        currentSquad.members.push({ nickname: val, class: '', gs: '' });
-                    } else {
-                        // Если это класс — вешаем его на последнего добавленного игрока
-                        if (currentSquad.members.length > 0) {
-                            currentSquad.members[currentSquad.members.length - 1].class = val;
-                        }
-                    }
-                } 
-                // Если это число (GS) — вешаем на последнего игрока
-                else if (currentSquad && !isNaN(val) && val.length >= 3) {
-                    if (currentSquad.members.length > 0) {
-                        currentSquad.members[currentSquad.members.length - 1].gs = val;
-                    }
+            // --- ЛЕВАЯ КОЛОНКА (Индексы 0, 1, 2, 3, 4) ---
+            const leftCell = (row[0] || '').trim();
+            
+            if (leftCell.toLowerCase().includes('group')) {
+                currentSquadLeft = { title: leftCell, members: [] };
+                squads.push(currentSquadLeft);
+            } 
+            else if (leftCell && currentSquadLeft && !leftCell.toLowerCase().includes('nickname') && !leftCell.toLowerCase().includes('никнейм')) {
+                const comment = (row[2] || '').trim(); // Если есть колонка Comment
+                const mem = { 
+                    nickname: leftCell, 
+                    class: (row[1] || '').trim(), 
+                    gs: (row[3] || '').trim() 
+                };
+                if (comment && comment.toLowerCase() !== 'comment') {
+                    mem.nickname += ` [${comment}]`;
                 }
-            });
+                currentSquadLeft.members.push(mem);
+            }
+
+            // --- ПРАВАЯ КОЛОНКА (Индексы 5, 6, 7, 8) ---
+            const rightGroupCell = (row[5] || '').trim();
+            if (rightGroupCell.toLowerCase().includes('group')) {
+                currentSquadRight = { title: rightGroupCell, members: [] };
+                squads.push(currentSquadRight);
+            } 
+            else {
+                const rightNickCell = (row[6] || '').trim();
+                const rightClassCell = (row[7] || '').trim();
+                const rightGsCell = (row[8] || '').trim();
+                const rightComment = (row[9] || '').trim(); // Если есть колонка Comment
+
+                if (rightNickCell && currentSquadRight && !rightNickCell.toLowerCase().includes('nickname') && !rightNickCell.toLowerCase().includes('никнейм')) {
+                    const mem = { 
+                        nickname: rightNickCell, 
+                        class: rightClassCell, 
+                        gs: rightGsCell 
+                    };
+                    if (rightComment && rightComment.toLowerCase() !== 'comment') {
+                        mem.nickname += ` [${rightComment}]`;
+                    }
+                    currentSquadRight.members.push(mem);
+                }
+            }
         });
 
         return squads.filter(s => s.members.length > 0);
@@ -221,7 +226,7 @@
         const container = document.getElementById(containerId);
         container.innerHTML = '';
         if (!squads || squads.length === 0) {
-            container.innerHTML = '<div class="loading-msg">Данные не найдены (проверьте структуру)</div>';
+            container.innerHTML = '<div class="loading-msg">Данные не найдены или лист пуст</div>';
             return;
         }
         squads.forEach(sq => {
@@ -285,37 +290,17 @@
         });
     }
 
-    function renderStats(enemies) {
-        const counts = {};
-        enemies.forEach(m => {
-            const c = (m.class || '').toUpperCase().trim();
-            if (c && c !== 'CLASS' && c !== 'КЛАСС') counts[c] = (counts[c] || 0) + 1;
-        });
-        const container = document.getElementById('container-stats');
-        container.innerHTML = Object.keys(counts).length 
-            ? Object.entries(counts).map(([k, v]) => `<div class="stat-card"><div class="stat-val">${v}</div><div class="stat-lbl">${k}</div></div>`).join('')
-            : '<div style="color:var(--text-muted)">Нет данных</div>';
-    }
-
-    const loadSquad = (url, containerId, isEnemy = false) => {
+    const loadSquad = (url, containerId) => {
         Papa.parse(url, {
             download: true, header: false, skipEmptyLines: true,
-            complete: res => {
-                const squads = parseGridData(res.data);
-                renderSquadList(containerId, squads);
-                if (isEnemy) {
-                    window.enemyList = window.enemyList || [];
-                    squads.forEach(sq => window.enemyList.push(...sq.members));
-                    renderStats(window.enemyList);
-                }
-            }
+            complete: res => renderSquadList(containerId, parseGridData(res.data))
         });
     };
 
     loadSquad(URLS.qwe, 'container-qwe');
     loadSquad(URLS.dd, 'container-dd');
-    loadSquad(URLS.dark1, 'container-dark1', true);
-    loadSquad(URLS.dark11, 'container-dark11', true);
+    loadSquad(URLS.dark1, 'container-dark1');
+    loadSquad(URLS.dark11, 'container-dark11');
 
     Papa.parse(URLS.blacklist, { download: true, header: true, skipEmptyLines: true, complete: res => renderTable('tbody-blacklist', normalizeFlatData(res.data)) });
     Papa.parse(URLS.targets, { download: true, header: true, skipEmptyLines: true, complete: res => renderTable('tbody-targets', normalizeFlatData(res.data), true) });
