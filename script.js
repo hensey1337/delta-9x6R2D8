@@ -1,6 +1,6 @@
 const PUB_KEY = '2PACX-1vSAdKvnDfusW0YrdnJgV3Wd3swPgFvKJRmSSQ1zc0aN2mxuBPpu2DvqzSwDnJqPeBHvFFV57e_ZJnR8';
 
-// Функция для генерации ссылки (с защитой от кэша)
+// Функция для генерации ссылки (с защитой от кэша браузера)
 const getUrl = (gid) => `https://docs.google.com/spreadsheets/d/e/${PUB_KEY}/pub?output=csv&gid=${gid}&cachebust=${Date.now()}`;
 
 const URLS = {
@@ -156,11 +156,15 @@ const loadSquad = (url, containerId) => {
     });
 };
 
-loadSquad(URLS.qwe, 'container-qwe');
-loadSquad(URLS.dd, 'container-dd');
-loadSquad(URLS.dark1, 'container-dark1');
-loadSquad(URLS.dark11, 'container-dark11');
-
-Papa.parse(URLS.blacklist, { download: true, header: true, skipEmptyLines: true, complete: res => renderTable('tbody-blacklist', normalizeFlatData(res.data)) });
-Papa.parse(URLS.targets, { download: true, header: true, skipEmptyLines: true, complete: res => renderTable('tbody-targets', normalizeFlatData(res.data), true) });
-Papa.parse(URLS.strategy, { download: true, header: true, skipEmptyLines: true, complete: res => renderStrategy(normalizeFlatData(res.data)) });
+// Запускаем загрузку всех данных одновременно
+Promise.all([
+    new Promise(resolve => loadSquad(URLS.qwe, 'container-qwe') || resolve()),
+    new Promise(resolve => loadSquad(URLS.dd, 'container-dd') || resolve()),
+    new Promise(resolve => loadSquad(URLS.dark1, 'container-dark1') || resolve()),
+    new Promise(resolve => loadSquad(URLS.dark11, 'container-dark11') || resolve()),
+    new Promise(resolve => Papa.parse(URLS.blacklist, { download: true, header: true, skipEmptyLines: true, complete: res => { renderTable('tbody-blacklist', normalizeFlatData(res.data)); resolve(); } })),
+    new Promise(resolve => Papa.parse(URLS.targets, { download: true, header: true, skipEmptyLines: true, complete: res => { renderTable('tbody-targets', normalizeFlatData(res.data), true); resolve(); } })),
+    new Promise(resolve => Papa.parse(URLS.strategy, { download: true, header: true, skipEmptyLines: true, complete: res => { renderStrategy(normalizeFlatData(res.data)); resolve(); } }))
+]).then(() => {
+    console.log("Все данные успешно загружены!");
+});
